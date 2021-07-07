@@ -34,14 +34,26 @@ exports.add = (req, res)=>{
 exports.addOne = (req, res)=>{
   var article = new Article({
     ...req.body,
+    image: `${req.protocol}://${req.get('host')}/images/articles/${req.file.filename}`,
     publishedAt: Date.now()
   })
-  console.log(article);
-  article.save()
-  .then(()=>{
-    res.render('add-article', {success: "Added"});
-  })
-  .catch((err)=>{
-    res.render('add-article', {error: err});
+  article.save((err, article)=>{
+    if(err){
+      Category.find()
+      .then((categories)=>{
+        res.render('add-article', {categories: categories, error:"Error occurred."})
+      })
+      .catch(()=>{
+        res.redirect('/')
+      });
+    } else {
+      Category.find()
+      .then((categories)=>{
+        res.render('add-article', {categories: categories, success:"Success!."})
+      })
+      .catch(()=>{
+        res.redirect('/')
+      })
+    }
   })
 }
